@@ -1,0 +1,223 @@
+================================================================================
+TÀI LIỆU HƯỚNG DẪN GỌI API CHO DỰ ÁN HEALTH & FITNESS ANDROID
+Base URL chính thức trên Cloud: https://android.akiya.io.vn/
+Content-Type chung: application/json
+================================================================================
+
+--------------------------------------------------------------------------------
+1. ĐĂNG KÝ TÀI KHOẢN (REGISTER)
+--------------------------------------------------------------------------------
+- Mô tả: Tạo tài khoản mới trên hệ thống và nhận về mã định danh duy nhất (userId).
+- Method: POST
+- Endpoint: /api/auth/register
+- URL đầy đủ: https://android.akiya.io.vn/api/auth/register
+- Headers:
+    Content-Type: application/json
+
+- Request Body (JSON):
+{
+  "username": "nguyenvanA",
+  "password": "123456"
+}
+
+- Response Thành công (200 OK):
+{
+  "success": true,
+  "message": "Đăng ký thành công!",
+  "userId": "USR_a1b2c3d4"
+}
+
+- Response Thất bại (400 Bad Request):
+{
+  "success": false,
+  "message": "Tên đăng nhập đã tồn tại."
+}
+
+- Ví dụ lệnh cURL để test nhanh trên Terminal:
+curl -X POST "https://android.akiya.io.vn/api/auth/register" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "nguyenvanA", "password": "123456"}'
+
+
+--------------------------------------------------------------------------------
+2. ĐĂNG NHẬP (LOGIN)
+--------------------------------------------------------------------------------
+- Mô tả: Xác thực tài khoản và lấy về userId để lưu vào SharedPreferences trên Android.
+- Method: POST
+- Endpoint: /api/auth/login
+- URL đầy đủ: https://android.akiya.io.vn/api/auth/login
+- Headers:
+    Content-Type: application/json
+
+- Request Body (JSON):
+{
+  "username": "nguyenvanA",
+  "password": "123456"
+}
+
+- Response Thành công (200 OK):
+{
+  "success": true,
+  "message": "Đăng nhập thành công!",
+  "userId": "USR_a1b2c3d4",
+  "username": "nguyenvanA"
+}
+
+- Response Thất bại (401 Unauthorized):
+{
+  "success": false,
+  "message": "Sai tên đăng nhập hoặc mật khẩu."
+}
+
+- Ví dụ lệnh cURL để test nhanh trên Terminal:
+curl -X POST "https://android.akiya.io.vn/api/auth/login" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "nguyenvanA", "password": "123456"}'
+
+
+--------------------------------------------------------------------------------
+3. SAO LƯU DỮ LIỆU TỪ ANDROID LÊN CLOUD (UPLOAD BACKUP)
+--------------------------------------------------------------------------------
+- Mô tả: Đóng gói toàn bộ dữ liệu từ Room Database (Profile, Food, Water, Weight, Workout) 
+         đẩy lên SQL Server trên Cloud qua tên miền công khai.
+- Method: POST
+- Endpoint: /api/sync/upload
+- URL đầy đủ: https://android.akiya.io.vn/api/sync/upload
+- Headers:
+    Content-Type: application/json
+
+- Request Body (JSON):
+{
+  "userId": "USR_a1b2c3d4",
+  "userProfile": {
+    "name": "Nguyễn Văn A",
+    "age": 25,
+    "gender": "Nam",
+    "height": 175.0,
+    "targetWeight": 70.0,
+    "activityLevel": "Moderate"
+  },
+  "foodLogs": [
+    {
+      "id": 0,
+      "foodName": "Cơm gà xối mỡ",
+      "calories": 650,
+      "protein": 35.5,
+      "carbs": 75.0,
+      "fat": 20.0,
+      "loggedAt": "2026-11-11T12:30:00"
+    }
+  ],
+  "waterLogs": [
+    {
+      "id": 0,
+      "amountMl": 500,
+      "loggedAt": "2026-11-11T08:30:00"
+    }
+  ],
+  "weightEntries": [
+    {
+      "id": 0,
+      "weight": 72.5,
+      "recordedDate": "2026-11-11T00:00:00"
+    }
+  ],
+  "workoutLogs": [
+    {
+      "id": 0,
+      "exerciseName": "Chạy bộ ngoài trời",
+      "durationMinutes": 45,
+      "caloriesBurned": 400,
+      "loggedAt": "2026-11-11T17:30:00"
+    }
+  ]
+}
+
+- Response Thành công (200 OK):
+{
+  "success": true,
+  "message": "Sao lưu dữ liệu lên Cloud thành công!"
+}
+
+- Ví dụ lệnh cURL để test nhanh:
+curl -X POST "https://android.akiya.io.vn/api/sync/upload" \
+     -H "Content-Type: application/json" \
+     -d '{"userId":"USR_a1b2c3d4","userProfile":{"name":"Nguyen Van A","age":25},"foodLogs":[],"waterLogs":[],"weightEntries":[],"workoutLogs":[]}'
+
+
+--------------------------------------------------------------------------------
+4. TẢI / KHÔI PHỤC DỮ LIỆU TỪ CLOUD VỀ ANDROID (DOWNLOAD RESTORE)
+--------------------------------------------------------------------------------
+- Mô tả: Khi người dùng cài lại app hoặc đăng nhập trên thiết bị mới, gọi API này 
+         với userId để tải toàn bộ dữ liệu cũ về và lưu lại vào Room Database.
+- Method: GET
+- Endpoint: /api/sync/download/{userId}
+- URL đầy đủ ví dụ: https://android.akiya.io.vn/api/sync/download/USR_a1b2c3d4
+
+- Response Thành công (200 OK):
+{
+  "success": true,
+  "userProfile": {
+    "id": 1,
+    "userId": "USR_a1b2c3d4",
+    "name": "Nguyễn Văn A",
+    "age": 25,
+    "gender": "Nam",
+    "height": 175.0,
+    "targetWeight": 70.0,
+    "activityLevel": "Moderate"
+  },
+  "foodLogs": [
+    {
+      "id": 1,
+      "userId": "USR_a1b2c3d4",
+      "foodName": "Cơm gà xối mỡ",
+      "calories": 650,
+      "protein": 35.5,
+      "carbs": 75.0,
+      "fat": 20.0,
+      "loggedAt": "2026-11-11T12:30:00"
+    }
+  ],
+  "waterLogs": [
+    {
+      "id": 1,
+      "userId": "USR_a1b2c3d4",
+      "amountMl": 500,
+      "loggedAt": "2026-11-11T08:30:00"
+    }
+  ],
+  "weightEntries": [
+    {
+      "id": 1,
+      "userId": "USR_a1b2c3d4",
+      "weight": 72.5,
+      "recordedDate": "2026-11-11T00:00:00"
+    }
+  ],
+  "workoutLogs": [
+    {
+      "id": 1,
+      "userId": "USR_a1b2c3d4",
+      "exerciseName": "Chạy bộ ngoài trời",
+      "durationMinutes": 45,
+      "caloriesBurned": 400,
+      "loggedAt": "2026-11-11T17:30:00"
+    }
+  ]
+}
+
+- Ví dụ lệnh cURL để test nhanh:
+curl -X GET "https://android.akiya.io.vn/api/sync/download/USR_a1b2c3d4"
+
+
+--------------------------------------------------------------------------------
+5. CẤU HÌNH RETROFIT TRÊN ANDROID (JAVA/KOTLIN)
+--------------------------------------------------------------------------------
+// Khởi tạo Retrofit với Base URL mới:
+Retrofit retrofit = new Retrofit.Builder()
+    .baseUrl("https://android.akiya.io.vn/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build();
+
+ApiService apiService = retrofit.create(ApiService.class);
